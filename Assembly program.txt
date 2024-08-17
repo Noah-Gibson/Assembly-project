@@ -1,0 +1,237 @@
+ORG 10
+
+// Initialize -48
+LDA NEG_OFFSET
+CMA
+ADD ONE
+STA NEG_OFFSET
+
+
+
+// TAKING INPUT
+
+// Tens digit octal input
+FST, SKI        // look for input
+    BUN FST    // no input
+    CLA        // clear AC
+    CLE
+    INP        // input to AC
+
+    STA FIRST  // store the input in FIRST
+
+// Ones digit octal input
+SND, SKI        // look for input
+    BUN SND    // no input
+    CLA
+    CLE
+    INP
+
+    STA SECOND // store the input in SECOND
+
+CLA        // clear AC
+CLE
+
+
+
+// MULTIPLYING FIRST DIGIT BY 8
+// TO CONVERT TO DECIMAL
+
+// Multiply first digit by 8
+LDA FIRST
+CIL
+CIL
+CIL
+ADD NEG_OFFSET
+ADD NEG_OFFSET
+ADD NEG_OFFSET
+ADD NEG_OFFSET
+ADD NEG_OFFSET
+ADD NEG_OFFSET
+ADD NEG_OFFSET
+STA TENS_RESULT
+
+// TENS_RESULT is FIRST mulitplied by 8 and offsetted
+
+// Initialize -10
+LDA NEG_TEN
+CMA
+ADD ONE
+STA NEG_TEN
+
+// Initialize to 0
+LDA LOOP_ITERATIONS
+ADD OFFSET
+STA LOOP_ITERATIONS
+
+LDA TENS_RESULT
+ADD NEG_OFFSET
+
+
+
+
+
+// PARSE RESULT OF FIRST DIGIT
+// MULTIPLIED BY 8
+
+// Subtract 10 from the tens digit input
+// until it's negative
+LOOP, ISZ LOOP_ITERATIONS
+    ADD NEG_TEN
+    SNA
+BUN LOOP
+
+STA TENS_RESULT
+
+// Initialize -1
+LDA NEG_ONE
+CMA
+ADD ONE
+STA NEG_ONE
+
+// Add 10 back to the digit since
+// it stopped when it was negative
+LDA TENS_RESULT
+ADD TEN
+ADD OFFSET
+// This is the ones value since it's
+// the remainder
+STA ONES_RESULT
+
+// Subtract one from the iterations
+// to get tens place since the
+// loop went for an extra iteration
+LDA LOOP_ITERATIONS
+ADD NEG_ONE
+STA TENS_RESULT
+
+// Output tens place
+//OUT
+CLA
+LDA ONES_RESULT
+// Output ones place
+//OUT
+
+
+
+
+// ADDING SECOND INPUT TO DECIMAL
+// TO FINISH DECIMAL CONVERSION
+
+// Check if second input plus
+// ONES_RESULT is negative or positive
+LDA SECOND
+ADD NEG_TEN
+ADD ONES_RESULT
+ADD NEG_OFFSET
+
+// If result is positive, add 1
+// to tens digit
+ADD NEG_OFFSET // Convert to decimal
+SNA
+STA ONES_RESULT
+SNA
+LDA TENS_RESULT
+SNA
+ADD ONE
+SNA
+STA TENS_RESULT
+SNA
+LDA ONES_RESULT
+ADD OFFSET // Convert to ASCII
+
+
+// If result is negative, add 10 back
+// to get original ones digit since
+// the tens digit doesn't need to be
+// increased
+ADD NEG_OFFSET // Convert to decimal
+SPA
+ADD TEN
+ADD OFFSET // Convert to ASCII
+
+STA ONES_RESULT
+
+// Output decimal value
+LDA TENS_RESULT
+// Output tens place
+//OUT
+CLA
+LDA ONES_RESULT
+// Output ones place
+//OUT
+
+
+
+
+
+// CHECKING IF DECIMAL VALLUE IS
+// MULTIPLE OF 5
+
+// Set LOOP_ITERATIONS to 0
+// (decimal 48)
+LDA OFFSET
+STA LOOP_ITERATIONS
+
+// Intiialize -5
+LDA NEG_FIVE
+CMA
+ADD ONE
+STA NEG_FIVE
+
+LDA ONES_RESULT
+ADD NEG_OFFSET
+
+// Subtract 5 from ones digit until
+// it's negative or 0
+FIVE_CHECK, ISZ LOOP_ITERATIONS
+
+// If ones digit is negative, the
+// value is not a multiple of 5
+SPA
+BUN THREE_CHECK
+
+SZA
+ADD NEG_FIVE
+
+SZA
+BUN FIVE_CHECK
+
+// Condition if value is 0
+BUN IS_MULTIPLE
+
+HLT
+
+IS_MULTIPLE, SNA
+    // Output decimal value
+    LDA TENS_RESULT
+    // Output tens place
+    OUT
+    CLA
+    // Buffer digit output to
+    // ensure tens digit always
+    // prints first
+    LDA OFFSET
+    BUFFER, SKO
+    BUN BUFFER
+    LDA ONES_RESULT
+    // Output ones place
+    OUT
+
+HLT        // quit
+
+FIRST, DEC 0
+SECOND, DEC 0
+TENS_RESULT, DEC 0
+ONES_RESULT, DEC 0
+LOOP_ITERATIONS, DEC 0
+RESULT, DEC 0
+NEG_FIVE, DEC 5
+ZERO, DEC 0
+ONE, DEC 1
+NEG_ONE, DEC 1
+TEN, DEC 10
+NEG_TEN, DEC 10
+OFFSET, DEC 48
+NEG_OFFSET, DEC 48 // ASCII offset for '0' in octal
+
+END       // End of the program
